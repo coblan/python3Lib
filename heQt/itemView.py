@@ -1,24 +1,37 @@
-from PyQt5.QtWidgets import *
+# -*- encoding:utf-8 -*-
+from PySide.QtGui import *
+from PySide.QtCore import *
 from heQt.itemModel import * 
+
+def get_menu_fo(win):
+    """minIn默认的返回菜单函数，该菜单用作右键菜单
+    """
+    menu=QMenu(win)
+    menu.addActions(win.actions())
+    return menu
 
 class mixIn(object):
     """
 *. 右键菜单显示，只需要self.addAction("do").connect(self.do)
 
 """
-    def __init__(self,*args):
-        super().__init__(*args)
+    def __init__(self,get_menu=get_menu_fo,*args):
+        """get_menu：可调用对象，返回一个Qmenu，这个menu用作右键菜单。可以更具鼠标位置的不同，返回不同的menu
+        """
+        super(mixIn,self).__init__(*args)
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.openCtxMenu)
+        self.get_menu=get_menu
         
     def openCtxMenu(self,point):
-        self.menu=QMenu(self)
+##        self.menu=QMenu(self)
         self.ctxMenuIdx=self.indexAt(point)
-        self.menu.addActions(self.actions())
+##        self.menu.addActions(self.actions())
+        self.menu=self.get_menu(self)
         self.menu.exec_(self.viewport().mapToGlobal(point))
         
     def addAction(self,act):
-        "@act : str / QAction"
+        "@act : str / QAction << 改函数可能被废除，用get_menu函数替代之"
         if isinstance(act, str):
             act=QAction(act,self)
             QWidget.addAction(self,act)
@@ -33,6 +46,7 @@ class mixIn(object):
         index=self.currentIndex()
         if index.isValid():
             return self.itemFromIndex( index )
+        
     def underMsItem(self):
         if self.ctxMenuIdx.isValid():
             return self.itemFromIndex(self.ctxMenuIdx)
@@ -41,6 +55,7 @@ class mixIn(object):
         if not self.model():
             self.setModel(StdItemModel())
         return self.model().append(*args)
+    
     def remove(self,*args):
         self.model().remove(*args)  
         
@@ -55,7 +70,15 @@ class listView(mixIn,QListView):
         
 #@fun_conect_to_ctxMenu
 class TreeView(mixIn,QTreeView):
-    pass
+    def autoExpand(self):
+        "自动恢复上次关闭的状态，有：展开项，当前项。(只能在设置了model之后才能调用改函数)"
+        self.model().treeView=self
+        for p,clst in self.model().walk():
+            if getattr(p,'expand',None):
+                self.expand(p.index())
+            if getattr(p,'selected',None):
+                self.setCurrentIndex(p.index())
+                
 ##    def append(self,data):
 ##        if not self.model():
 ##            self.setModel(treeModel())

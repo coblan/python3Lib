@@ -1,4 +1,5 @@
 # -*- encoding:utf8 -*-
+from __future__ import print_function
 
 import sys
 class IPickle(object):
@@ -12,16 +13,16 @@ class IPickle(object):
     def __init__(self, *args):
         try:
             # 继承的时候，IPickle不要排在最后，因为最后的object不能接受args，会报错。
-            super().__init__( *args)     
+            super(IPickle,self).__init__( *args)     
         except TypeError as e:
-            print(e,file=sys.stderr)
+            print('[Erro_he] '+str(e),file=sys.stderr)
         self.constructArgs=args
         self.pickleDict = {}
     def __reduce__(self):
         return self.__class__,self.constructArgs,self.pickleDict
     
     def __setstate__(self,state):
-        self.pickleDict=state
+##        self.pickleDict=state
         self.__dict__.update(state)
 
 #################################
@@ -32,12 +33,12 @@ class jj(object):
     pass
 class test(IPickle,jj):
     def __init__(self,name):
-        super().__init__(name)
+        super(test,self).__init__(name)
         self.name = name
     
     def __reduce__(self):
         self.pickleDict={'name':self.name}
-        return super().__reduce__()
+        return super(test,self).__reduce__()
 if __name__=='__main__':
     import pickle
     

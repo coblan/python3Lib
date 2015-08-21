@@ -1,10 +1,11 @@
 # -*- encoding:utf8 -*-
 
-from PyQt5.QtGui import * 
-from PyQt5.QtCore import *
+from PySide.QtGui import * 
+from PySide.QtCore import *
+
 from heOs.pickle_ import IPickle
 import pickle,itertools
-class stdItem(IPickle, QStandardItem):
+class StdItem(IPickle, QStandardItem):
     """
 *. 实现了pickle支持.利用的是Qt的QDatastream来pickle了Item，所以你需要遵守QStandardItem存储数据的规则。
    例如，item.setdata(Qt.userRole+1,someObj)
@@ -54,8 +55,10 @@ class stdItem(IPickle, QStandardItem):
             
     def walk(self):
         yield (self, self.childs())
-        for jj in self.childs():
-            yield jj.walk()
+        for jj in list(self.childs()):
+            for f in  jj.walk():
+                yield f
+                
             
     def __reduce__(self):
         """
@@ -70,10 +73,14 @@ class stdItem(IPickle, QStandardItem):
               'posRow' : self.posRow,
               'posCol' : self.posCol, 
               "childs": pickle.dumps (list(self.childs()) ),}
- 
+        
+        #如果是treeView，有可能会要求保留expand状态
+        if hasattr( self.model(),'treeView'):
+            dc['expand'] = self.model().treeView.isExpanded(self.index())
+            dc['selected']= self.model().treeView.currentIndex()==self.index()
           
         self.pickleDict.update(dc)                # 由于qt很多元素都不能pickle，所以最好用pickle_dict来限制需要pickle的元素
-        return super().__reduce__()
+        return super(StdItem,self).__reduce__()
     
     def __setstate__(self,state):
         """
@@ -89,7 +96,7 @@ class stdItem(IPickle, QStandardItem):
             for child in childs:
                 self.append(child)
             
-        return super().__setstate__(state)
+        return super(StdItem,self).__setstate__(state)
     
     #def next_sib(self):
         #p=self.parent()
@@ -127,7 +134,7 @@ class stdItem(IPickle, QStandardItem):
                     self.remove(ii)
                     break
         if isinstance(data,str):
-            data=stdItem(data)
+            data=StdItem(data)
         self.appendRow(data)
     
     def __hash__(self):
@@ -135,16 +142,16 @@ class stdItem(IPickle, QStandardItem):
         
 if __name__=='__main__':
     import pickle,sys
-    from PyQt5.QtWidgets import *
-    from PyQt5.QtCore import *
-    from PyQt5.QtGui import *
-    from heQt.itemModel import listModel,treeModel
+    from PyQt4.QtGui import *
+    from PyQt4.QtCore import *
+    
+    from heQt.itemModel import StdItemModel
     app=QApplication(sys.argv)
-    jj=stdItem()
+    jj=StdItem()
     #jj=QStandardItem()
     jj.setData('haha',Qt.UserRole+1)
 
-    mode=treeModel()
+    mode=StdItemModel()
     #mode=QStandardItemModel()
     mode.append(jj)
     st= pickle.dumps(jj)

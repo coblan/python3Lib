@@ -3,10 +3,10 @@
 # 主要添加功能包括：
 # 1. 直接保存到文件，从文件读取恢复。注意item必须使用item.py中的stdItem
 
-from PyQt5.QtGui import * 
-from PyQt5.QtCore import *
+from PySide.QtGui import * 
+
 from heOs.pickle_ import IPickle
-from heQt.item import stdItem
+from heQt.item import StdItem
 import itertools
 
 ##def adapt(mode):
@@ -77,12 +77,19 @@ class StdItemModel(IPickle,QStandardItemModel):
 ##        else:
 ##            raise StopIteration
 ##        return self.item(tmp_row,tmp_col)
-        
+
+            
     def childs(self):
         rct,cct=self.rowCount(),self.columnCount()
         for r,c in itertools.product(range(rct),range(cct)):
             yield self.item(r,c) 
             
+    def walk(self):
+        yield (self, self.childs())
+        for jj in list(self.childs()):
+            for f in  jj.walk():
+                yield f
+                
 ##    def walk(self):
 ##        for ii in self:
 ##            if ii:
@@ -97,13 +104,13 @@ class StdItemModel(IPickle,QStandardItemModel):
         dc={'childs':list(self.childs())}
         
         self.pickleDict.update(dc)                           #新版本的HPickle类的属性
-        return super().__reduce__()
+        return super(StdItemModel,self).__reduce__()
     
     def __setstate__(self,state):
         itms=state.pop('childs',None)
         for itm in itms:
             self.setItem(itm.posRow,itm.posCol,itm)
-        return super().__setstate__(state)
+        return super(StdItemModel,self).__setstate__(state)
     
     def remove(self,itm):
         """
@@ -136,7 +143,7 @@ class StdItemModel(IPickle,QStandardItemModel):
 ##                else:
 ##                    parent=self
         if isinstance(data,str):
-            data=stdItem(data)
+            data=StdItem(data)
         if data.model() is self:
             self.remove(data)
         parent.appendRow(data)
