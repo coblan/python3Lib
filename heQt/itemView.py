@@ -1,33 +1,29 @@
-# -*- encoding:utf-8 -*-
-from PySide.QtGui import *
-from PySide.QtCore import *
+#!python3
+
+from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
 from heQt.itemModel import * 
 
-def get_menu_fo(win):
-    """minIn默认的返回菜单函数，该菜单用作右键菜单
-    """
-    menu=QMenu(win)
-    menu.addActions(win.actions())
-    return menu
+
 
 class mixIn(object):
     """
 *. 右键菜单显示，只需要self.addAction("do").connect(self.do)
-
+2. get_menu：回调函数，返回一个Qmenu，这个menu用作右键菜单。可以更具鼠标位置的不同，返回不同的menu
 """
-    def __init__(self,get_menu=get_menu_fo,*args):
-        """get_menu：可调用对象，返回一个Qmenu，这个menu用作右键菜单。可以更具鼠标位置的不同，返回不同的menu
+    def __init__(self,*args):
+        """
         """
         super(mixIn,self).__init__(*args)
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.openCtxMenu)
-        self.get_menu=get_menu
+
         
     def openCtxMenu(self,point):
 ##        self.menu=QMenu(self)
         self.ctxMenuIdx=self.indexAt(point)
 ##        self.menu.addActions(self.actions())
-        self.menu=self.get_menu(self)
+        self.menu=self.get_menu()
         self.menu.exec_(self.viewport().mapToGlobal(point))
         
     def addAction(self,act):
@@ -59,6 +55,12 @@ class mixIn(object):
     def remove(self,*args):
         self.model().remove(*args)  
         
+    def get_menu(self):
+        """minIn默认的返回菜单函数，该菜单用作右键菜单
+        """
+        menu=QMenu(self)
+        menu.addActions(self.actions())
+        return menu 
 #@fun_conect_to_ctxMenu      
 class tableView(mixIn,QTableView):
     pass

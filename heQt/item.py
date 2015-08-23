@@ -1,7 +1,8 @@
-# -*- encoding:utf8 -*-
+#!python3
 
-from PySide.QtGui import * 
-from PySide.QtCore import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
 
 from heOs.pickle_ import IPickle
 import pickle,itertools
@@ -142,9 +143,7 @@ class StdItem(IPickle, QStandardItem):
         
 if __name__=='__main__':
     import pickle,sys
-    from PyQt4.QtGui import *
-    from PyQt4.QtCore import *
-    
+
     from heQt.itemModel import StdItemModel
     app=QApplication(sys.argv)
     jj=StdItem()

@@ -3,7 +3,7 @@
 # 主要添加功能包括：
 # 1. 直接保存到文件，从文件读取恢复。注意item必须使用item.py中的stdItem
 
-from PySide.QtGui import * 
+from PyQt5.QtGui import * 
 
 from heOs.pickle_ import IPickle
 from heQt.item import StdItem

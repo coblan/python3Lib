@@ -1,6 +1,4 @@
-# -*- encoding:utf8 -*-
-from __future__ import print_function
-
+#!python3
 import sys
 class IPickle(object):
     """
