@@ -4,7 +4,7 @@
 # 1. 直接保存到文件，从文件读取恢复。注意item必须使用item.py中的stdItem
 
 from PyQt5.QtGui import * 
-
+from PyQt5.QtCore import *
 from heOs.pickle_ import IPickle
 from heQt.item import StdItem
 import itertools
@@ -82,7 +82,7 @@ class StdItemModel(IPickle,QStandardItemModel):
     def childs(self):
         rct,cct=self.rowCount(),self.columnCount()
         for r,c in itertools.product(range(rct),range(cct)):
-            yield self.item(r,c) 
+            yield StdItem( self.item(r,c) )
             
     def walk(self):
         yield (self, self.childs())
@@ -109,7 +109,7 @@ class StdItemModel(IPickle,QStandardItemModel):
     def __setstate__(self,state):
         itms=state.pop('childs',None)
         for itm in itms:
-            self.setItem(itm.posRow,itm.posCol,itm)
+            self.setItem(itm.posRow,itm.posCol,itm.item)
         return super(StdItemModel,self).__setstate__(state)
     
     def remove(self,itm):
@@ -143,11 +143,14 @@ class StdItemModel(IPickle,QStandardItemModel):
 ##                else:
 ##                    parent=self
         if isinstance(data,str):
-            data=StdItem(data)
+            data=QStandardItem(data)
+        elif isinstance(data,StdItem):
+            data=data.item
         if data.model() is self:
             self.remove(data)
         parent.appendRow(data)
-        
+    def supportedDropActions(self):
+        return  Qt.MoveAction
 ##    @adapt(QIODevice.WriteOnly)
 ##    def save(self,out):
 ##        "@out: datastream or file name"
@@ -183,15 +186,15 @@ class StdItemModel(IPickle,QStandardItemModel):
 
 
 ##class tableModel(mixin,QStandardItemModel):
-    pass
+##    pass
 ##    def __init__(self,parent=None):
 ##        super().__init__(parent)
 ##        self.open("d:/tttt.jj")             #  直接从文件恢复
 
     
 ##class listModel(mixin,QStandardItemModel):
-    """如果不需要太多的功能，可以使用 QStringListModel"""
-    pass
+##    """如果不需要太多的功能，可以使用 QStringListModel"""
+##    pass
 ##    def __init__(self,parent=None):
 ##        super().__init__(parent)
 ##    def append(self,data):

@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
+from PyQt5.QtCore import  *
 
 import pickle, re
 from heQt.tabWidget_p.barBase import BarBase
@@ -19,7 +20,7 @@ class TabWidgetBase(QTabWidget):
     """
     def __init__(self, *args):
         super().__init__( *args)
-        
+
         self.tabCloseRequested.connect(self.removeTab)
 
     def enableCrossDrag(self, cusBar = BarBase):
@@ -29,6 +30,8 @@ class TabWidgetBase(QTabWidget):
             self.setTabBar(self.cusBar)
         self.cusBar.enableCrossDrag()
         self.crossDrag = _crossDrag(self, self.cusBar.comDrag)
+        add_sub_obj(self, self.crossDrag)
+
     def enableChineseDirection(self, cusBar = BarBase):
         if not hasattr(self, "cusBar"):
             self.cusBar = cusBar(self)
@@ -156,7 +159,6 @@ class _crossDrag:
     def __init__(self, tabwidget, bar_comdrag):
         self.tabwidget = tabwidget
         tabwidget.setAcceptDrops(True)
-        add_sub_obj(tabwidget, self)
         self.bar_comdrag = bar_comdrag
         
     def dragEnterEvent(self, event):

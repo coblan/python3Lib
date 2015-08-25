@@ -6,7 +6,7 @@ from PyQt5.QtCore import *
 
 from heOs.pickle_ import IPickle
 import pickle,itertools
-class StdItem(IPickle, QStandardItem):
+class StdItem(IPickle):
     """
 *. 实现了pickle支持.利用的是Qt的QDatastream来pickle了Item，所以你需要遵守QStandardItem存储数据的规则。
    例如，item.setdata(Qt.userRole+1,someObj)
@@ -19,9 +19,17 @@ class StdItem(IPickle, QStandardItem):
     修改了remove的C++行为，不在由C++删除remove的项
     修改了append的C++行为，如果std_item的后代项中已经包括了简要append的项，那么将该项移到最后。
     """
-##    def __init__(self, *args):
-##        super().__init__(*args)
-        
+    def __init__(self, item=None):
+        super().__init__()
+        if isinstance( item,QStandardItem):
+            self.item = item
+        elif isinstance(item,str):
+            self.item = QStandardItem(item)
+        else:
+            self.item = QStandardItem()
+            
+    def __getattr__(self,name):
+        return getattr(self.item,name)
 ##    def __iter__(self):
 ##        self.row_tot = self.rowCount()
 ##        self.row_crt = 0
@@ -52,7 +60,7 @@ class StdItem(IPickle, QStandardItem):
     def childs(self):
         rct,cct=self.rowCount(),self.columnCount()
         for r,c in itertools.product(range(rct),range(cct)):
-            yield self.child(r,c)
+            yield  StdItem( self.child(r,c) )
             
     def walk(self):
         yield (self, self.childs())
@@ -67,7 +75,7 @@ class StdItem(IPickle, QStandardItem):
         """
         buf = QByteArray()
         out = QDataStream(buf,QIODevice.WriteOnly)
-        out << self
+        out << self.item
         self.posRow = self.row()
         self.posCol = self.column()
         dc = {'qbyte' : buf,
@@ -89,14 +97,14 @@ class StdItem(IPickle, QStandardItem):
         """
         buf = state.pop('qbyte')
         in_ = QDataStream(buf,QIODevice.ReadOnly)
-        in_ >> self
+        in_ >> self.item
         
         childByt = state.pop("childs", None)
         if childByt:
             childs = pickle.loads(childByt )
             for child in childs:
                 self.append(child)
-            
+        self.item.__dict__.update(state)
         return super(StdItem,self).__setstate__(state)
     
     #def next_sib(self):
@@ -135,7 +143,9 @@ class StdItem(IPickle, QStandardItem):
                     self.remove(ii)
                     break
         if isinstance(data,str):
-            data=StdItem(data)
+            data=QStandardItem(data)
+        elif isinstance(data,StdItem):
+            data=data.item
         self.appendRow(data)
     
     def __hash__(self):
@@ -143,10 +153,11 @@ class StdItem(IPickle, QStandardItem):
         
 if __name__=='__main__':
     import pickle,sys
-
+    from heQt.item import StdItem
     from heQt.itemModel import StdItemModel
     app=QApplication(sys.argv)
-    jj=StdItem()
+    
+    jj=StdItem(QStandardItem() )
     #jj=QStandardItem()
     jj.setData('haha',Qt.UserRole+1)
 
@@ -156,8 +167,9 @@ if __name__=='__main__':
     st= pickle.dumps(jj)
     kk=pickle.loads(st)
     
-    mode.appendRow(kk)
-    mode.appendRow(pickle.loads(st))
+    mode.appendRow(kk.item)
+    print(kk.data())
+    mode.appendRow(pickle.loads(st).item)
     hm1=pickle.dumps(mode)
     
     hm2=pickle.loads(hm1)

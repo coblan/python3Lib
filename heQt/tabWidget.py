@@ -10,8 +10,8 @@ class TabWidget(TabWidgetBase):
     2 保存，恢复所有能够pickle的窗口
     
     重要函数：
-    enableCrossDrag(Bar<-cls)           开启夸窗口拖拽功能
-    enableChineseDirection(Bar<-cls)    开启中文调整方向功能
+    enableCrossDrag(Bar = BarBase)      type(Bar)==Bar     开启夸窗口拖拽功能
+    enableChineseDirection(Bar = BarBase )    开启中文调整方向功能
     
     注意：这两个函数的参数是Bar的子类，不是Bar的对象
     """

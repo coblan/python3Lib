@@ -1,11 +1,11 @@
-import os
+import os,sys
 import subprocess
 
 
 def copy(from_,to_):
     if not os.path.exists(from_):
         raise OSError('file not exist')
-    rt = subprocess.call( 'copy %s %s' % (from_, to_),shell=True,stdout=subprocess.DEVNULL)
+    rt = subprocess.call( 'copy "%s" "%s"' % (from_, to_),shell=True,stdout=subprocess.DEVNULL)
     if rt==0:
         return True
     else:

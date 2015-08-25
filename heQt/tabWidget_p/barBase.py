@@ -17,7 +17,7 @@ class BarBase(QTabBar):
     
     def enableCrossDrag(self):
         self.comDrag = _crossDrag(self)
-        self.comDrag.install()
+        add_sub_obj(self, self.comDrag)
        
  
     @sub_obj_call
@@ -85,10 +85,9 @@ class _crossDrag:
     def __init__(self, bar):
         self.bar = bar
         self.tabwidget = bar.tabwidget
-    def install(self):
         self.bar.setAcceptDrops(True)
         self.line = None
-        add_sub_obj(self.bar, self)
+
         
     def dragMoveEvent(self, event):
         tabIdx = self.bar.tabAt( event.pos())

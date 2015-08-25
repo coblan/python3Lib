@@ -9,5 +9,9 @@ class kiss(object):
         print( super().__getattribute__('__class__').__bases__ )
 
 
+def foo():
+    cc = kiss()
+    c2 = kiss()
 
-cc=kiss()
+
+foo()

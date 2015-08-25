@@ -34,14 +34,13 @@ class MainWidget(QMainWindow):
                       例子见sesSaver.registeSaveItem
         3 mainwidget.restoreAll() 在合适的地方调用，例如在构造函数的最后面
         """ 
-        if hasattr(self, "enableSaveON"):
-            return
-        self.enableSaveON = True
-        
-        self.saveSess = SesSaver(self)
-        add_sub_obj(self, self.saveSess)
-##        self.restoreAll = self.saveSess.restoreAll
-##        self.registeSaveItem = self.saveSess.registeSaveItem
+        # 防止多次调用改函数
+        if not hasattr(self, "_enableSaveON"):
+            self._enableSaveON = True
+            
+            self.saveSess = SesSaver(self)
+            add_sub_obj(self, self.saveSess)
+
         
     @sub_obj_call
     def registeSaveItem(self, restore, save, name):

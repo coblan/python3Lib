@@ -19,15 +19,16 @@ class StdoutView(QTextBrowser):
     sys.stderr = sys.stdout
     
     2. 设置定时探针,n秒显示一次探针的值
-    win.openSensor(5)  /win.openSensor_notCThread(5)          # 非创建线程中启动 sensor
+    win.openSensor(5)  /win.openSensor_notCThread(5)          # 普通/非创建线程中启动 sensor
     doSometing ...
     win.sensorValue=“要显示的内容"
     doSomething ...
-    win.closeSensor()  /win.closeSensor_notCThread()          # 非创建线程中关闭 sensor
+    win.closeSensor()  /win.closeSensor_notCThread()          # 普通/非创建线程中关闭 sensor
     """
     
     openSensor_notCThread = pyqtSignal(int)
     closeSensor_notCThread = pyqtSignal()
+
     def __init__(self,*args):
         super(StdoutView,self).__init__(*args)
         self.sensorValue = "StdoutView default sensor"
@@ -39,10 +40,9 @@ class StdoutView(QTextBrowser):
             act = QAction(name, self)
             self.addAction(act)
             act.triggered.connect(getattr(self, name))
-        #act = QAction("clear", self)
-        #self.addAction(act)
-        #act.triggered.connect(self.clear)
+
         self.setContextMenuPolicy(Qt.ActionsContextMenu)
+
     def setAdaptor(self,adapt):
         if hasattr(self,'adaptor'):
             self.adaptor.cout.disconnect()
@@ -56,17 +56,28 @@ class StdoutView(QTextBrowser):
         cursor = self.textCursor()
         cursor.movePosition(QTextCursor.End)
         self.setTextCursor(cursor)
-        
-##        if getattr(sys.stdout,'html',None):
-        rt = re.match(r'(\w+)=>(.*)',msg,re.S)
-        if rt :
-##            msg = msg.lstrip('red=>')
-            self.setTextColor(QColor(rt. group(1)))
-            self.insertPlainText(rt. group(2))
-        
-        else:
+
+        start = 0
+        for mt in re.finditer(r'^(\w+)=>(.*)<=END$',msg,re.M ):
+            end = mt.start()
             self.setTextColor(QColor('black'))
-            self.insertPlainText(msg)
+            self.insertPlainText(msg[start:end])
+
+            start = end
+            end = mt.end()
+            self.setTextColor(QColor(mt.group(1)))
+            self.insertPlainText(mt.group(2))
+
+            start = end
+        self.setTextColor(QColor('black'))
+        self.insertPlainText(msg[start:])
+        # if rt :
+        #     self.setTextColor(QColor(rt. group(1)))
+        #     self.insertPlainText(rt.group(2))
+        #
+        # else:
+        #     self.setTextColor(QColor('black'))
+        #     self.insertPlainText(msg)
             
         bar=self.verticalScrollBar()
         bar.setSliderPosition(bar.maximum ())
@@ -74,11 +85,10 @@ class StdoutView(QTextBrowser):
     def getStdoutObj(self):
         """快捷的方式，返回一个stdoutAdaptor对象。可以多次的调用，返回的都是同一个adapter。
         单线程时，可以直接用:sys.stdout = self .多线程时，必须使用该函数返回的obj。"""
-        if hasattr(self, 'adaptor'):
-            return self.adaptor
-        else:
+        if not hasattr(self, 'adaptor'):
             self.setAdaptor(StdoutAdaptor())
         return self.adaptor
+
     def openSensor(self, sec):
         "开启传感器,sec秒显示一次 值"
         sec = sec * 1000
@@ -87,7 +97,8 @@ class StdoutView(QTextBrowser):
         
     def closeSensor(self):
         if hasattr(self, "_sensorTimer"):
-            self.killTimer(self._sensorTimer)        
+            self.killTimer(self._sensorTimer)
+
     def timerEvent(self, e):
         if hasattr(self, "_sensorTimer", ) and e.timerId() == self._sensorTimer:
             print(self.sensorValue)

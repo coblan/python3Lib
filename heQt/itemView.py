@@ -11,41 +11,45 @@ class mixIn(object):
 *. 右键菜单显示，只需要self.addAction("do").connect(self.do)
 2. get_menu：回调函数，返回一个Qmenu，这个menu用作右键菜单。可以更具鼠标位置的不同，返回不同的menu
 """
-    def __init__(self,*args):
+    def __init__(self, *args):
         """
         """
-        super(mixIn,self).__init__(*args)
+        super().__init__(*args)
         self.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.customContextMenuRequested.connect(self.openCtxMenu)
-
+        self.customContextMenuRequested.connect(self.open_ctx_menu)
+        self.ctxMenuIdx = None
+        self.menu = None
         
-    def openCtxMenu(self,point):
-##        self.menu=QMenu(self)
-        self.ctxMenuIdx=self.indexAt(point)
-##        self.menu.addActions(self.actions())
-        self.menu=self.get_menu()
+    def open_ctx_menu(self, point):
+        self.ctxMenuIdx = self.indexAt(point)
+        self.menu = self.get_menu()
         self.menu.exec_(self.viewport().mapToGlobal(point))
         
     def addAction(self,act):
-        "@act : str / QAction << 改函数可能被废除，用get_menu函数替代之"
+        """ << 已经用get_menu函数添加了menu，所以该函数可能被废除。
+
+        @:type act1: QAction/str
+        @param act1: Person to repress.
+
+        """
         if isinstance(act, str):
             act=QAction(act,self)
-            QWidget.addAction(self,act)
+            QWidget.addAction(self, act)
         elif isinstance(act, QAction):
-            QWidget.addAction(self,act)
+            QWidget.addAction(self, act)
         return act
     
-    def itemFromIndex(self, index):
+    def itemfromindex(self, index):
         return self.model().itemFromIndex(index)
     
     def currentItem(self):
         index=self.currentIndex()
         if index.isValid():
-            return self.itemFromIndex( index )
+            return self.itemfromindex( index )
         
     def underMsItem(self):
         if self.ctxMenuIdx.isValid():
-            return self.itemFromIndex(self.ctxMenuIdx)
+            return self.itemfromindex(self.ctxMenuIdx)
         
     def append(self,*args):
         if not self.model():
@@ -61,17 +65,18 @@ class mixIn(object):
         menu=QMenu(self)
         menu.addActions(self.actions())
         return menu 
-#@fun_conect_to_ctxMenu      
-class tableView(mixIn,QTableView):
+
+
+class TableView(mixIn, QTableView):
     pass
 
 
-#@fun_conect_to_ctxMenu
-class listView(mixIn,QListView):
+class ListView(mixIn, QListView):
     pass
         
-#@fun_conect_to_ctxMenu
-class TreeView(mixIn,QTreeView):
+
+class TreeView(mixIn, QTreeView):
+
     def autoExpand(self):
         "自动恢复上次关闭的状态，有：展开项，当前项。(只能在设置了model之后才能调用改函数)"
         self.model().treeView=self

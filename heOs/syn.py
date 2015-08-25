@@ -7,7 +7,7 @@ syn_copy(_from,_to,except_=None,except_name=func_copy) :
 
 import sys,os
 from os.path import *
-import heOs.path as hePath
+from heOs.path import copy
 
 def main():
 ##    for k in walk(r'D:\try\scrapy'):
@@ -30,7 +30,7 @@ def cmpDir(x,y):
 def not_modefied(_from,_to):
     """简便函数，用作copy的默认判断函数，能够判断修改时间的先后"""
     try:
-        return getmtime(_from)<getmtime(_to)
+        return getmtime(_from)<=getmtime(_to)
     except OSError as e:
         return False
     
@@ -64,12 +64,12 @@ def syn_copy(_from,_to,except_=None,except_name=not_modefied):
             flnm=normpath(join(root_to,jj))
             if not except_name or not except_name(join(root,jj),flnm):
                 try:
-                    if exists(flnm):
-                        os.remove(flnm)
-                    if hePath.copy(join(root,jj),flnm):
+##                    if exists(flnm):
+##                        os.remove(flnm)
+                    if copy(join(root,jj),flnm):
                         print("复制文件 :从"+join(root,jj)+"到---->>>"+flnm)
                 except Exception as e:
-                    print("复制文件  %s错误, 错误为:%s"%(flnm,e))
+                    print("复制文件  %s错误, 错误为:%s"%(flnm,e),file=sys.stderr)
 
 
 def delDir(dir_,except_=None,except_name=None):
