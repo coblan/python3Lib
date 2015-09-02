@@ -8,6 +8,8 @@ from heOs.pickle_ import IPickle
 import pickle,itertools
 class StdItem(IPickle):
     """
+    qstandarItem的包装类
+    
 *. 实现了pickle支持.利用的是Qt的QDatastream来pickle了Item，所以你需要遵守QStandardItem存储数据的规则。
    例如，item.setdata(Qt.userRole+1,someObj)
    如果要使用python的item.propery的方式保存数据，必须更新item.pickleDict

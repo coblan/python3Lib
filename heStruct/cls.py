@@ -22,6 +22,29 @@ a.fun()
 
 """
 
+
+
+def component_call(components):
+    def _sub(fun):
+        def __sub(self, *args,**kw):
+            rt = fun(self, *args,**kw)
+            # if not hasattr(cls, "comps"):
+            #     return
+            for comp in components:
+                if not hasattr(comp, fun.__name__):
+                    continue
+                else:
+                    getattr(comp, fun.__name__)(self,*args,**kw)
+            return rt
+        return __sub
+    return _sub
+def add_component(components, comp):
+    # if not hasattr(cls, "comps"):
+    #     cls.comps = []
+    if comp not in components:
+        components.append(comp)
+
+
 index = 0
 def sub_obj_call(fun):
     """装饰器，用在需要插入子对象的mainBoard方法上

@@ -30,6 +30,7 @@ class TabWidgetBase(QTabWidget):
             self.setTabBar(self.cusBar)
         self.cusBar.enableCrossDrag()
         self.crossDrag = _crossDrag(self, self.cusBar.comDrag)
+        self.setAcceptDrops(True)
         add_sub_obj(self, self.crossDrag)
 
     def enableChineseDirection(self, cusBar = BarBase):
@@ -60,20 +61,20 @@ class TabWidgetBase(QTabWidget):
         raise StopIteration    
     
     #[2] 添加窗口，添加标签名，将名字标签名保存在windowTitle中
-    def addTab(self, widget, name_icon = "", name = ""):
+    def addTab(self, widget, name_or_icon = "", name = ""):
         widget.tabWidget_ = self
-        if isinstance(name_icon, QIcon):
+        if isinstance(name_or_icon, QIcon):
             widget.setWindowTitle(name)
             if self.isNeedTurnDirection(name):
-                return super().addTab(widget, name_icon)
+                return super().addTab(widget, name_or_icon)
             else:
-                return super().addTab(widget, name_icon, name)
+                return super().addTab(widget, name_or_icon, name)
         else:
-            widget.setWindowTitle(name_icon)
-            if self.isNeedTurnDirection(name_icon):
+            widget.setWindowTitle(name_or_icon)
+            if self.isNeedTurnDirection(name_or_icon):
                 return super().addTab(widget, "")
             else:
-                return super().addTab(widget, name_icon)
+                return super().addTab(widget, name_or_icon)
     
     def insertTab(self, index, widget, name_icon , name = None):
         widget.tabWidget_ = self
@@ -158,19 +159,18 @@ class _crossDrag:
     """与bar的_crossDrag组件一起构成了Tabwidget的拖拽功能"""
     def __init__(self, tabwidget, bar_comdrag):
         self.tabwidget = tabwidget
-        tabwidget.setAcceptDrops(True)
         self.bar_comdrag = bar_comdrag
         
     def dragEnterEvent(self, event):
         event.acceptProposedAction()
     def dropEvent(self, event):
         mime = event.mimeData()
-        self.tabwidget.addTab(mime.win, mime.win.windowTitle() ) 
+        self.tabwidget.addTab(mime.win, mime.win.windowTitle() )
         self.bar_comdrag.line = None
-        self.tabwidget.tabBar().update()   
+        self.tabwidget.tabBar().update()
         
     def dragMoveEvent(self, event):
         self.bar_comdrag.drawLine( -1)
     def dragLeaveEvent(self, event):
         self.bar_comdrag.line = None
-        self.tabwidget.tabBar().update()     
+        self.tabwidget.tabBar().update()
