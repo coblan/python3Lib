@@ -52,41 +52,15 @@ import itertools
 ##        recurOpen(tmp,cin)
 ##        canFetch=cin.readBool()
 class StdItemModel(IPickle,QStandardItemModel):
-##    def __init__(self,*args):
-##        super().__init__(*args)
-
-##    def __iter__(self):
-##        self.row_tot=self.rowCount()
-##        self.row_cnt=0
-        
-##        self.col=self.columnCount()
-##        self.col_cnt=0
-##        return self
-    
-##    def __next__(self):
-##        """返回值按照 [row,col]进位，返回"""
-##        if self.col_cnt<self.col:
-##            tmp_col=self.col_cnt
-##            self.col_cnt+=1
-##        else:
-##            tmp_col=0
-##            self.col_cnt=1
-##            self.row_cnt+=1 
-##        if self.row_cnt<self.row_tot:
-##            tmp_row=self.row_cnt
-##        else:
-##            raise StopIteration
-##        return self.item(tmp_row,tmp_col)
-
-            
+      
     def childs(self):
         rct,cct=self.rowCount(),self.columnCount()
         for r,c in itertools.product(range(rct),range(cct)):
-            yield StdItem( self.item(r,c) )
+            yield self.item(r,c) 
             
     def walk(self):
         yield (self, self.childs())
-        for jj in list(self.childs()):
+        for jj in self.childs():
             for f in  jj.walk():
                 yield f
                 
@@ -109,7 +83,7 @@ class StdItemModel(IPickle,QStandardItemModel):
     def __setstate__(self,state):
         itms=state.pop('childs',None)
         for itm in itms:
-            self.setItem(itm.posRow,itm.posCol,itm.item)
+            self.setItem(itm.p_posRow,itm.p_posCol,itm)
         return super(StdItemModel,self).__setstate__(state)
     
     def remove(self,itm):

@@ -40,12 +40,14 @@ class myTreeView(TreeView):
 
         # 生成右键菜单子模块
         self._menu = tree_menu(self)
-        self.get_menu = self._menu.get_menu
-
+        
         ##        self.setAcceptDrops(True)
         self.setDragDropMode(QAbstractItemView.InternalMove)  # QAbstractItemView.DragDrop)
         self.setDragDropOverwriteMode(False)
-
+    
+    def get_menu(self):
+        return self._menu.get_menu()
+    
     def changItemColor(self):
         if self.underMsItem():
             self.underMsItem().setData(QColor(self.sender().text()), Qt.ForegroundRole)
@@ -58,7 +60,7 @@ class myTreeView(TreeView):
         return super(myTreeView, self).currentChanged(cur, pre)
 
     def add(self):
-        itm = StdItem('new item')
+        itm = QStandardItem('new item')
         self.append(itm, self.underMsItem())
 
     def delete(self):
@@ -269,14 +271,9 @@ if __name__ == '__main__':
     sys.stdout = view.getStdoutObj()
     sys.stderr = sys.stdout
 
-    sys.stderr_prox = view.getStdoutObj()
+##    sys.stderr_prox = view.getStdoutObj()
 
     mainWin.restoreAll()
     mainWin.show()
-    ##    stns=QSettings('stns',QSettings.IniFormat)
-
-    ##    mainWin.restoreGeometry( stns.value('win/geo') )
-    ##    mainWin.restoreState(stns.value("win/split") )
-
 
     sys.exit(app.exec_())

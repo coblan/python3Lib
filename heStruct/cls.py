@@ -39,8 +39,6 @@ def component_call(components):
         return __sub
     return _sub
 def add_component(components, comp):
-    # if not hasattr(cls, "comps"):
-    #     cls.comps = []
     if comp not in components:
         components.append(comp)
 

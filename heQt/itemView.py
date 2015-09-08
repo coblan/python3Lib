@@ -80,10 +80,12 @@ class TreeView(mixIn, QTreeView):
     def autoExpand(self):
         "自动恢复上次关闭的状态，有：展开项，当前项。(只能在设置了model之后才能调用改函数)"
         self.model().treeView=self
-        for p,clst in self.model().walk():
-            if getattr(p,'expand',None):
+        ls = list(self.model().walk() )
+        for p,clst in ls[-1::-1]:
+            if getattr(p,'p_expand',None):
                 self.expand(p.index())
-            if getattr(p,'selected',None):
+ 
+            if getattr(p,'p_selected',None):
                 self.setCurrentIndex(p.index())
                 
 ##    def append(self,data):
