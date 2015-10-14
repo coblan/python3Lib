@@ -12,6 +12,7 @@ import pickle,itertools
 class StdItem(QStandardItem):
     """
     通过直接修改QStandardItem，增加pickle功能，childs,walk遍历功能
+    只需要导入该模块，就会自动添加pickle功能
     
 *. 实现了pickle支持.利用的是Qt的QDatastream来pickle了Item，所以你需要遵守QStandardItem存储数据的规则。
    例如，item.setdata(Qt.userRole+1,someObj)

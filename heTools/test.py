@@ -26,30 +26,34 @@
 # log.setLevel(logging.DEBUG)
 # log.debug("fuck")
 
-from heQt.qtPickle import QtPickle
-from PyQt5.QtWidgets import *
-from heStruct.cls import add_component
-import pickle
-class fuck(QtPickle):
-    def real_reduce(self):
-        self.pickle_dict['fuck']='春天'
+#-------------------------------------------------
+#from heQt.qtPickle import QtPickle
+#from PyQt5.QtWidgets import *
+#from heStruct.cls import add_component
+#import pickle
+#class fuck(QtPickle):
+    #def real_reduce(self):
+        #self.pickle_dict['fuck']='春天'
 
-    def __setstate__(self,state):
-        if isinstance(self,QWidget):
-            self.setWindowTitle(state['fuck'])
+    #def __setstate__(self,state):
+        #if isinstance(self,QWidget):
+            #self.setWindowTitle(state['fuck'])
 
-add_component(QtPickle.components,fuck)
+#add_component(QtPickle.components,fuck)
 
-if __name__ =='__main__':
-    import  sys
-    app=QApplication(sys.argv)
-    win=QWidget()
-    win.show()
+#if __name__ =='__main__':
+    #import  sys
+    #app=QApplication(sys.argv)
+    #win=QWidget()
+    #win.show()
 
-    ss =pickle.dumps(win)
-    print(ss)
-    cd= pickle.loads(ss)
+    #ss =pickle.dumps(win)
+    #print(ss)
+    #cd= pickle.loads(ss)
 
-    cd.show()
+    #cd.show()
 
-    sys.exit(app.exec_())
+    #sys.exit(app.exec_())
+    
+dc = {'a':1}
+print('a' in dc)
