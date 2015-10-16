@@ -215,7 +215,7 @@ class LineStrip(QGraphicsItem):
         #for p in points:
             #i = PointItem(self)
             #i.setPos(p)
-        self.points_ = points
+        self.points = points
         
         self.msPoint = None
         self.awarePoint = None
@@ -227,14 +227,14 @@ class LineStrip(QGraphicsItem):
         self.act1.triggered.connect(self.on_insert_act)
         self.act2.triggered.connect(self.on_rm_act)
         
-    def awarePoints(self):
-        return self.points
+    #def awarePoints(self):
+        #return self.points
     
-    def awareLine(self):
-        return []
+    #def awareLine(self):
+        #return []
     
-    def points(self):
-        return self.points_
+    #def points(self):
+        #return self.points_
         #return [i.pos() for i in self.pointItems()]
     
     def pointItems(self):
@@ -250,7 +250,7 @@ class LineStrip(QGraphicsItem):
             self.awarePoint = None
         else:
             p = self.mapFromScene(scnPos)
-            for i in self.points():
+            for i in self.points:
                 if (p-i).manhattanLength() < 6:
                     self.prepareGeometryChange()
                     self.awarePoint = i
@@ -276,21 +276,21 @@ class LineStrip(QGraphicsItem):
 
              
     def paint(self, painter, option, widget=None):
-        if len(self.points())>=2:
+        if len(self.points )>=2:
             start = None
-            for end in self.points():
+            for end in self.points:
                 if start is not None:
                     painter.drawLine(start,end)
                 start = end
         if self.isSelected():
             painter.drawRects(self._controller())
-        if self.awarePoint != None:
+        elif self.awarePoint != None:
             rect = QRectF(self.awarePoint, self.awarePoint).adjusted(-6,-6,6,6)
             painter.drawRect(rect)
             
     def boundingRect(self):
-        xs=[p.x() for p in self.points()]
-        ys=[p.y() for p in self.points()]
+        xs=[p.x() for p in self.points]
+        ys=[p.y() for p in self.points]
         minx=min(xs)
         maxx = max(xs)
         miny = min(ys)
@@ -305,26 +305,26 @@ class LineStrip(QGraphicsItem):
     def _controller(self):
         rects = []
         r = self.radius
-        for p in self.points():
+        for p in self.points:
             rects.append( QRectF(p,p).adjusted(-r,-r,r,r) )
         return rects
     
     def hoverEnterEvent(self,event):
-        view = self.scene().views()[0]
+        view = event.widget()
         view.setCursor(Qt.SizeAllCursor)
         
     def hoverLeaveEvent(self,event):
         view = event.widget()
         view.setCursor(Qt.ArrowCursor)
-        if self.awarePoint != None:
-            self.prepareGeometryChange()
-            self.awarePoint = None
+        #if self.awarePoint != None:
+            #self.prepareGeometryChange()
+            #self.awarePoint = None
         
     def hoverMoveEvent(self,event):
         pos = event.pos()
         view = event.widget()
         
-        for p in self.points():
+        for p in self.points:
             distans = p - pos
             if distans.manhattanLength()< self.grabRadius:
                 view.setCursor(Qt.PointingHandCursor)
@@ -341,7 +341,7 @@ class LineStrip(QGraphicsItem):
         
     def mousePressEvent(self,event):
         self.lastpos = event.pos()
-        for p in self.points():
+        for p in self.points:
             distans = p - event.pos()
             if distans.manhattanLength()< self.grabRadius :
                 self.crt_point = p
@@ -372,7 +372,7 @@ class LineStrip(QGraphicsItem):
     def shape(self):
         path = QPainterPath()
         
-        for s,e  in self.pair(self.points()):
+        for s,e  in self.pair(self.points):
             path.moveTo(s)
             path.lineTo(e)
         for r in self._controller():
@@ -500,6 +500,7 @@ class LineDrawer(QObject):
         
     def on_completLine(self, func):
         scene = self.manager.scene
+        del self.tmppoints[-1]
         strip = LineStrip(self.tmppoints)
         scene.addItem(strip)
         self.tmppoints = []
@@ -515,9 +516,9 @@ class AwareItem(QGraphicsItem):
     """能够自动添加控制杆
     子类只需要重写setSize"""
     
-    @staticmethod
-    def install(view): 
-        pass
+    #@staticmethod
+    #def install(view): 
+        #pass
         #view.registFreeMSmoveAware(ControlRect)    
         
     def __init__(self,*args,**kw):

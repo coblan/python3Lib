@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from dg import Ui_Dialog
-from heQt.graphicsView import GraphicsView
+from heQt.graphicsView import GraphicsView,Scene
 from heOs.pickle_ import IPickle
 import pickle,os
 import sys
@@ -23,7 +23,7 @@ class MyWin(GraphicsView):
         self.tmp_rect = ''
         self.pars_fname = ''
         self.start_pos = ''
-        self.setScene(QGraphicsScene())
+        self.setScene(Scene())
         
         #self.scene().installEventFilter(self)
         
@@ -101,10 +101,12 @@ class MyWin(GraphicsView):
         if hasattr(self.under_ms_item,'actions') :
             self.menu.addActions(self.under_ms_item.actions(posScen = self.mapToScene(pos)))
         self.menu.addActions(self.actions())
+        self.menu.addActions(self.scene().manager.actions())
         self.menu.exec_(self.viewport().mapToGlobal(pos)) 
         
     def set_line(self):
-        self.dynstate = 'create_linestrip'
+        pass
+        #self.dynstate = 'create_linestrip'
         #if self.sender().isChecked():
             #self.state = 'draw_line'
         #else:
@@ -115,58 +117,58 @@ class MyWin(GraphicsView):
         else:
             self.state = ''
     
-    @dynplug
-    def mousePressEvent(self,event):
-        if self.state == 'draw_line':
-            self.start_pos = self.mapToScene( event.pos() )
-        elif self.state == 'draw_rect':
-            self.start_pos = self.mapToScene( event.pos() )
+    ##@dynplug
+    #def mousePressEvent(self,event):
+        #if self.state == 'draw_line':
+            #self.start_pos = self.mapToScene( event.pos() )
+        #elif self.state == 'draw_rect':
+            #self.start_pos = self.mapToScene( event.pos() )
             
-        return super().mousePressEvent(event)
+        #return super().mousePressEvent(event)
     
-    @dynplug
-    def mouseMoveEvent(self,event):
-        if self.state == 'draw_line' and self.start_pos:
-            if self.tmp_line:
-                self.scene().removeItem(self.tmp_line)
-            pos = self.mapToScene( event.pos() )
-            self.tmp_line = QGraphicsLineItem(self.start_pos.x(),self.start_pos.y(),pos.x(),pos.y())
-            self.scene().addItem(self.tmp_line)
-        elif self.state == 'draw_rect' and self.start_pos:
-            if self.tmp_rect:
-                self.scene().removeItem(self.tmp_rect)
-            pos = self.mapToScene( event.pos() )
-            rectf = self.ponit2rectf(self.start_pos , pos)
-            self.tmp_rect = QGraphicsRectItem(rectf)
-            self.scene().addItem(self.tmp_rect)
+    ##@dynplug
+    #def mouseMoveEvent(self,event):
+        #if self.state == 'draw_line' and self.start_pos:
+            #if self.tmp_line:
+                #self.scene().removeItem(self.tmp_line)
+            #pos = self.mapToScene( event.pos() )
+            #self.tmp_line = QGraphicsLineItem(self.start_pos.x(),self.start_pos.y(),pos.x(),pos.y())
+            #self.scene().addItem(self.tmp_line)
+        #elif self.state == 'draw_rect' and self.start_pos:
+            #if self.tmp_rect:
+                #self.scene().removeItem(self.tmp_rect)
+            #pos = self.mapToScene( event.pos() )
+            #rectf = self.ponit2rectf(self.start_pos , pos)
+            #self.tmp_rect = QGraphicsRectItem(rectf)
+            #self.scene().addItem(self.tmp_rect)
             
-        else:
-            return super().mouseMoveEvent(event)
+        #else:
+            #return super().mouseMoveEvent(event)
     def ponit2rectf(self,p1,p2):
         x1 ,y1 = min( p1.x(),p2.x()) ,min(p1.y(),p2.y())
         x2,y2 =  max( p1.x(),p2.x()) ,max(p1.y(),p2.y())
         return QRectF( QPointF(x1,y1),QPointF(x2,y2))
         
-    @dynplug
-    def mouseReleaseEvent(self,event):
-        if self.state == 'draw_line' and self.start_pos:
-            if self.tmp_line:
-                self.scene().removeItem(self.tmp_line) 
-                self.tmp_line = ''
-            pos = self.mapToScene( event.pos() )
-            line =Line(self.start_pos.x(),self.start_pos.y(),pos.x(),pos.y())
-            self.scene().addItem(line)
-            self.start_pos = ''
-        elif self.state == 'draw_rect' and self.start_pos:
-            if self.tmp_rect:
-                self.scene().removeItem(self.tmp_rect)
-                self.tmp_rect = ''
-            pos = self.mapToScene( event.pos() )
-            rectf = self.ponit2rectf(self.start_pos , pos)
-            rect = Rect(rectf)    
-            self.scene().addItem(rect)
-            self.start_pos = ''
-        return super().mouseReleaseEvent(event)
+    ##@dynplug
+    #def mouseReleaseEvent(self,event):
+        #if self.state == 'draw_line' and self.start_pos:
+            #if self.tmp_line:
+                #self.scene().removeItem(self.tmp_line) 
+                #self.tmp_line = ''
+            #pos = self.mapToScene( event.pos() )
+            #line =Line(self.start_pos.x(),self.start_pos.y(),pos.x(),pos.y())
+            #self.scene().addItem(line)
+            #self.start_pos = ''
+        #elif self.state == 'draw_rect' and self.start_pos:
+            #if self.tmp_rect:
+                #self.scene().removeItem(self.tmp_rect)
+                #self.tmp_rect = ''
+            #pos = self.mapToScene( event.pos() )
+            #rectf = self.ponit2rectf(self.start_pos , pos)
+            #rect = Rect(rectf)    
+            #self.scene().addItem(rect)
+            #self.start_pos = ''
+        #return super().mouseReleaseEvent(event)
     
     def save(self):
 

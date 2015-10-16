@@ -18,11 +18,6 @@ class GraphicsView(QGraphicsView):
         
         self.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)
         
-        #AwareItem.install(self)
-        #LineStrip.install(self)
-        
-    #def registFreeMSmoveAware(self,cls):
-        #self._msMoveAware.add(cls)
         
     def wheelEvent(self,event):
         if self.modifier == Qt.ControlModifier:
@@ -55,11 +50,7 @@ class GraphicsView(QGraphicsView):
     def actions(self):
         return s(GraphicsView)
 
-#class AwareManager:
-    #def __init__(self):
-        #self.aware = CollideItem()
-        #self.addItem(self.aware)
-        
+  
 class Manager(QObject):
     def __init__(self, scn):
         s(Manager,scn)
@@ -190,6 +181,10 @@ class GView1(GraphicsView):
         
         
 class Scene(QGraphicsScene):
+    """
+    Manager
+    mouserMoveEvent()写了aware
+    """
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setSceneRect(-500,-500,1000,1000)
@@ -201,26 +196,37 @@ class Scene(QGraphicsScene):
         self.awarePoint = None
         self.awareItem = None
 
-        # 测试划线
         self.manager = Manager(self)
-           
+        
+    def clear(self):
+        s(Scene)
+        self.aware = CollideItem()
+        
     def mouseMoveEvent(self, event):
         scnPos=event.scenePos()
         self.aware.setPos(scnPos)
         grab = self.mouseGrabberItem()
-        self.awarePoint = None
-        for i in self.collidingItems(self.aware):
-            if i == grab:
-                continue
-            else:
-                if self.awareItem != None and self.awareItem != i and hasattr(self.awareItem,'aware'):
-                    self.awareItem.aware(False, scnPos)
-                
-                if hasattr(i,'aware'):
-                    self.awareItem = i
-                    self.awareItem.aware(True, scnPos)
-                    break
         
+        self.awarePoint = None
+        
+        awareitem = None
+        for i in self.collidingItems(self.aware):
+            if i == grab :
+                continue
+            elif hasattr(i,'aware'):
+                awareitem = i
+                break
+            
+        if awareitem != None:
+            if self.awareItem != awareitem and self.awareItem !=None:
+                self.awareItem.aware(False,scnPos)
+            self.awareItem = awareitem
+            self.awareItem.aware(True, scnPos)
+        else:
+            if self.awareItem !=None:
+                self.awareItem.aware(False, scnPos)
+                self.awareItem = None
+            
         if not self.manager.mouseMoveEvent(event):
             return s(Scene,event)
     
@@ -253,7 +259,7 @@ class CollideItem(QGraphicsItem):
     
     def shape(self):
         path = QPainterPath()
-        path.addEllipse(0,0,self.radius,self.radius)
+        path.addEllipse(-self.radius, -self.radius, self.radius*2, self.radius*2)
         return path
     
 if __name__ == '__main__':
