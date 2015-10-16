@@ -1,13 +1,13 @@
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
+from heQt.qteven import *
+from heStruct.pyeven import *
 from login_ui import Ui_Form
 from interface import login
 import sys
 
 class LoginWin(QWidget,Ui_Form):
-    login_ok = pyqtSignal(object)
+    login_ok = Signal(object)
     def __init__(self, parent=None):
-        super().__init__(parent)
+        s(LoginWin,parent)
         self.setupUi(self)
         self.setWindowTitle('MetaInfo upload tool login')
         

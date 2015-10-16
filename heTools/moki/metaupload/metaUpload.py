@@ -1,9 +1,17 @@
-import sys
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
+#! encoding=utf8
+import sys,os
+
+sys.path.append("python")
+os.environ["path"] += ";dlls"
+
+from heQt.qteven import *
 from uploadWin import UploadWin
 from loginWin import LoginWin
 from interface import get_data,upload,get_list
+
+#dlls = os.path.join(os.getcwd(),'dlls')
+#sys.path.append(dlls)
+
 
 def show_mainwin(login_return):
     if login_return:

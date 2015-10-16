@@ -86,8 +86,57 @@ def del_sub_obj(mainBoard, obj):
     if obj.sub_obj_index is not None:
         del mainBoard.sub_objs[obj.sub_obj_index]
         obj.sub_obj_index = None
-        
+########################################################################
+def dynplug(dynstate):
+    '''用来给类对象动态的插入各种函数。
+    一个类对象在不同的状态间切换，根据状态的不同，各种回调函数应该调用不同的函数，而这些调用函数由item提交，进行映射。
+    构建时，类需要有：
+    
+    母类中：
+    1.self.mapfunc={}
+    2. self.dynstate = 'createLine'
+    3. 在母类中，需要映射的函数，添加@dynplug
+    
+    子类中：
+    1. 撰写函数为:
+       @staticmethod
+       itemfunc(motherfunc,mother,*args,**kw)
+    2. 构建一个函数，填写好mother.mapfunc字典，如：
+       mother.mapfunc['createLine'] ={
+                'mouseMoveEvent':itemfuncMove,
+                'mousePressEvent':itemfuncPress,
+            }
+       初试化item类staticmethod需要用到的各种变量。
+    
+    使用时，只需要设置mother.dynsate = 'createLine' 就可以自动切换状态。
+    
+    
+    class Drawer:
+        def mousePressEvent(self, view, func, event):
+            pass
+    '''
+
+    def _dynplug(func):
+        def _func(self, *args, **kw):
+            #if not hasattr(self,'dynstate'):
+                #return func(self, *args, **kw)
+            #if isinstance(dynstate,str):
+            state_obj = getattr(self,dynstate)
+            #else:
+                #state_obj = dynstate
+            if state_obj:
+                sub_func = getattr(state_obj, func.__name__)#self.mapfunc.get(state, None)
+                if state_obj and sub_func:
+                    #rfunc = funmaps.get(func.__name__,None)
+                    return sub_func( *args, **kw)
+            return func(self, *args, **kw)
+        return _func
+    return _dynplug
+
+
+ 
 ####################################################
+        
 def sub_obj_route(fun):
     def _sub(mainBoard, *args):
         if not hasattr(mainBoard, "sub_objs"):

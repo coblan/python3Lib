@@ -1,7 +1,9 @@
+#! encoding=utf8
+from __future__ import unicode_literals
 import copy
 metalist=[
-    ('META-20150821004','MACY3117','New Born Sisters & Brothers - Mommy & New Baby','Update','1.1','Apple','Macy Gone Crazy',	'New','Approved','2015-10-12 14:20:44'),
-    ('META-20150723001','DONUT4014','Cake Pop Princess','New','1.0','Google','','New','Pending','')
+    ('META-20150821004','MACY3117','New Born Sisters & Brothers - Mommy & New Baby','Update','1.1','iTunes Apple Store','Macy Gone Crazy',	'New','Approved','2015-10-12 14:20:44'),
+    ('META-20150723001','DONUT4014','Cake Pop Princess','New','1.0','Google play','','New','Pending','')
       
 ]
 
