@@ -15,16 +15,9 @@ class ControlRect(QGraphicsItem):
         #self.item = item
         self.lastPos = None
         self.msState = -1
-        #self._oldrect = None
         
         self.setParentItem(item)
-        #item.scene().addItem(self)
-        #item.moveObserver.append(self.setPos)
-        #pitem = item.parentItem()
-        #if pitem:
-            #self.setPos(pitem.mapToScene(item.pos()))
-        #else:
-            #self.setPos(item.pos())
+
         self.rect = item.boundingRect()
         
         # 本来不需要 movable的，但是为了和下面的item抢事件，所以设置了个Movable
@@ -32,10 +25,7 @@ class ControlRect(QGraphicsItem):
         self.setAcceptHoverEvents(True)
 
     def resize(self,qrect):
-        #if not self._oldrect:
-            #self._oldrect = self.rect.adjusted(-self.margin,-self.margin,self.margin,self.margin)
-        #else:
-            #self._oldrect = self._oldrect.united(self.rect)
+
         self.prepareGeometryChange()
         self.rect = qrect
         self.setSize(qrect)
