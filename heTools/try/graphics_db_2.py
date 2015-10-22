@@ -1,21 +1,20 @@
-from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-from dg import Ui_Dialog
-from heQt.graphicsView import GraphicsView,Scene
-from heOs.pickle_ import IPickle
+from heQt.qteven import *
+from heStruct.pyeven import *
+from dg_ui import Ui_Dialog
+from heQt.graphicsView import GraphicsView,Scene,Aware,LineDrawer,LineStrip
+
 import pickle,os
 import sys
-from syntext import SynModel
+#from syntext import SynModel
 from saveToApp import reguler_code
 from parse_model import parse,App,model
-from heStruct.cls import dynplug
-from heQt.graphicsView_p.items import LineStrip
+from heQt.dockWidget import DockWidget,DockPanel
+
 
 class MyWin(GraphicsView):
     
     def __init__(self, parent=None):
-        super().__init__(parent)
+        s(MyWin,parent)
         self.pickleable = (ModelGram,QGraphicsLineItem,AppGram,Text,Rect,LineStrip)
         gob .win= self
         self.state = ''
@@ -23,8 +22,19 @@ class MyWin(GraphicsView):
         self.tmp_rect = ''
         self.pars_fname = ''
         self.start_pos = ''
-        self.setScene(Scene())
         
+        #self.graphicsView = GraphicsView()
+        
+        scene = Scene()
+        #scene.setSceneRect(-1000,-1000,2000,2000)
+        aware = Aware(scene)
+        scene.setAware(aware)
+        scene.appendDrawer(LineDrawer(scene, aware))
+        
+        self.setScene(scene)
+        #lay = QVBoxLayout()
+        #lay.addWidget(self.graphicsView)
+        #self.setLayout(lay)
         #self.scene().installEventFilter(self)
         
         #self.setDragMode(QGraphicsView.RubberBandDrag)
@@ -59,7 +69,10 @@ class MyWin(GraphicsView):
             if isinstance(i,Gram):
                 i.active = not i.active
                 i.update()
-                   
+   
+    #def scene(self):
+        #return self.graphicsView.scene()
+            
     def copy_selected(self):
         sels = self.scene().selectedItems()
         sels = [i for i in sels if isinstance(i,self.pickleable)]
@@ -101,7 +114,7 @@ class MyWin(GraphicsView):
         if hasattr(self.under_ms_item,'actions') :
             self.menu.addActions(self.under_ms_item.actions(posScen = self.mapToScene(pos)))
         self.menu.addActions(self.actions())
-        self.menu.addActions(self.scene().manager.actions())
+        self.menu.addActions(self.scene().actions())
         self.menu.exec_(self.viewport().mapToGlobal(pos)) 
         
     def set_line(self):
@@ -117,76 +130,45 @@ class MyWin(GraphicsView):
         else:
             self.state = ''
     
-    ##@dynplug
-    #def mousePressEvent(self,event):
-        #if self.state == 'draw_line':
-            #self.start_pos = self.mapToScene( event.pos() )
-        #elif self.state == 'draw_rect':
-            #self.start_pos = self.mapToScene( event.pos() )
-            
-        #return super().mousePressEvent(event)
-    
-    ##@dynplug
-    #def mouseMoveEvent(self,event):
-        #if self.state == 'draw_line' and self.start_pos:
-            #if self.tmp_line:
-                #self.scene().removeItem(self.tmp_line)
-            #pos = self.mapToScene( event.pos() )
-            #self.tmp_line = QGraphicsLineItem(self.start_pos.x(),self.start_pos.y(),pos.x(),pos.y())
-            #self.scene().addItem(self.tmp_line)
-        #elif self.state == 'draw_rect' and self.start_pos:
-            #if self.tmp_rect:
-                #self.scene().removeItem(self.tmp_rect)
-            #pos = self.mapToScene( event.pos() )
-            #rectf = self.ponit2rectf(self.start_pos , pos)
-            #self.tmp_rect = QGraphicsRectItem(rectf)
-            #self.scene().addItem(self.tmp_rect)
-            
-        #else:
-            #return super().mouseMoveEvent(event)
+
     def ponit2rectf(self,p1,p2):
         x1 ,y1 = min( p1.x(),p2.x()) ,min(p1.y(),p2.y())
         x2,y2 =  max( p1.x(),p2.x()) ,max(p1.y(),p2.y())
         return QRectF( QPointF(x1,y1),QPointF(x2,y2))
         
-    ##@dynplug
-    #def mouseReleaseEvent(self,event):
-        #if self.state == 'draw_line' and self.start_pos:
-            #if self.tmp_line:
-                #self.scene().removeItem(self.tmp_line) 
-                #self.tmp_line = ''
-            #pos = self.mapToScene( event.pos() )
-            #line =Line(self.start_pos.x(),self.start_pos.y(),pos.x(),pos.y())
-            #self.scene().addItem(line)
-            #self.start_pos = ''
-        #elif self.state == 'draw_rect' and self.start_pos:
-            #if self.tmp_rect:
-                #self.scene().removeItem(self.tmp_rect)
-                #self.tmp_rect = ''
-            #pos = self.mapToScene( event.pos() )
-            #rectf = self.ponit2rectf(self.start_pos , pos)
-            #rect = Rect(rectf)    
-            #self.scene().addItem(rect)
-            #self.start_pos = ''
-        #return super().mouseReleaseEvent(event)
+
     
     def save(self):
-
         if not self.pars_fname:
             return self.save_as()
-
         out = []
         for i in  self.scene().items():
             if isinstance(i,self.pickleable):
                 out.append(i)
         with open(self.pars_fname,'wb') as f:
             pickle.dump(out,f)
-            
+    
+    def new_save(self):
+        if not self.pars_fname:
+            return self.save_as()
+        out = []
+        for i in  self.scene().items():
+            if isinstance(i,self.pickleable):
+                out.append(i)
+        rect = self.scene().sceneRect()
+        mp = {'items':out,
+              'sceneRect':(rect.x(),rect.y(),rect.width(),rect.height())
+              } 
+        
+        with open(self.pars_fname,'wb') as f:
+            pickle.dump(mp,f)        
+        
+        
     def save_as(self):
         name,ok = QFileDialog.getSaveFileName(None,'保存解析文件为')
         if name:
             self.pars_fname = name
-            self.save()
+            self.new_save()
     
     def load(self):
         name ,ok = QFileDialog.getOpenFileName(None,'打开解析文件')
@@ -197,27 +179,26 @@ class MyWin(GraphicsView):
                 items = pickle.load(f)
                 for i in items:
                     self.scene().addItem(i)
+    def new_load(self):
+        name ,ok = QFileDialog.getOpenFileName(None,'打开解析文件')
+        if os.path.exists(name):
+            self.scene().clear()
+            self.pars_fname = name
+            with open(name,'rb') as f:
+                mp = pickle.load(f)
+                for i in mp['items']:
+                    self.scene().addItem(i)
+                self.scene().setSceneRect(*mp['sceneRect'])
                     
-    #def add(self):
-        #mw = ModelGram('new title','new item','')
-        #self.scene().addItem(mw)   
-        
-        #title = QGraphicsTextItem()
-        #title.setPlainText('dpog')
-        #title.setTextInteractionFlags(Qt.TextEditorInteraction)  
-        #self.scene().addItem(title)
+
     def add_model(self):
         mw = ModelGram('new title','new item','')
         self.scene().addItem(mw)  
+        
     def add_app(self):
         m_app = AppGram('new app', 'code')
         self.scene().addItem(m_app)
         
-    #def from_dict(self,dc):
-        #for k ,v in dc.items():
-            #item = ModelGram(k)
-            #item.code = v
-            #self.scene().addItem(item)
 
     def parser(self):
         name = QFileDialog.getExistingDirectory(None,'选择文件夹')
@@ -347,21 +328,22 @@ class MyWin(GraphicsView):
 class gob(object):
     win = ''
 
-class Line(QGraphicsLineItem,IPickle):
+class Line(QGraphicsLineItem):
     def __init__(self, x1,y1,x2,y2):
         super().__init__(x1,y1,x2,y2)
         self.constructArgs =(x1,y1,x2,y2)
         self.setFlag(QGraphicsItem.ItemIsMovable)
         self.setFlag(QGraphicsItem.ItemIsSelectable)        
     def __reduce__(self):
-        self.pickleDict['pos'] = self.pos()
-        return self.__class__,self.constructArgs,self.pickleDict  
+        pickleDict={}
+        pickleDict['pos'] = self.pos()
+        return self.__class__,self.constructArgs,pickleDict  
     def __setstate__(self,state):
         self.setPos(state.pop('pos',QPoint(0,0)) )
         self.__dict__.update(state)    
 
-from heQt.graphicsView_p.items import AwareItem,ControlRect
-class Gram(AwareItem,IPickle):
+from heQt.graphicsView_p.items import Controlable,ControlRect
+class Gram(Controlable,QGraphicsItem):
     
     def __init__(self,*args,**kw):
         super().__init__(*args,**kw)
@@ -377,13 +359,14 @@ class Gram(AwareItem,IPickle):
     
       
     def on_dialog_accepted(self):
-        self.code = self.dialog.plainTextEdit.toPlainText()
+        self.code = self.dialog.editor.text().decode('utf8')
         
     def open_code(self):
         #dd=mydg()
         self.dialog.setWindowTitle(self.get_title())
-        self.dialog.plainTextEdit.setPlainText(self.code)
+        
         self.dialog.show()
+        self.dialog.editor.setText(self.code.encode('utf8'))
         #if dd.show() == QDialog.Accepted:
             #self.code = dd.plainTextEdit.toPlainText()    
             
@@ -445,12 +428,15 @@ class ModelGram(Gram):
 
             
     def __reduce__(self):
-        #self.pickleDict['code'] = self.code
-        self.pickleDict['pos'] = self.pos()
-        self.pickleDict['active'] = self.active
-        return self.__class__,(self.title_label.toPlainText(),self.name_label.toPlainText(),self.code,),self.pickleDict    
+        pickleDict={}
+        
+        pickleDict['pos'] = (self.pos().x(),self.pos().y())
+        pickleDict['active'] = self.active
+        return self.__class__,(self.title_label.toPlainText(),self.name_label.toPlainText(),self.code,),pickleDict   
+    
     def __setstate__(self,state):
-        self.setPos(state.pop('pos',QPoint(0,0)) )
+        pos = state.pop('pos',(0,0) )
+        self.setPos(*pos )
         self.active = state.pop('active',True)
         self.__dict__.update(state)
 
@@ -469,21 +455,10 @@ class ModelGram(Gram):
     def app(self):
         return self.title_label.toPlainText()
     
-    #def sceneEvent(self,event):
-        
-        #if self.title.hasFocus():
-            #if event.type() == QEvent.GraphicsSceneMouseMove:
-                #self.scene().sendEvent(self.title,event)
-                #return
-        #return super().sceneEvent(event)
-    #def mouseDoubleClickEvent(self,event):
-        #for i in [self.title,self.name]:
-            #if i.mapToParent(i.boundingRect()).containsPoint( event.pos(),0):
-                #i.start_edit()
-        #return super().mouseDoubleClickEvent(event)
+
     
 class textlable(QGraphicsTextItem):
-    edited = pyqtSignal()
+    edited = Signal()
     def __init__(self, *args,**kw):
         super().__init__(*args,**kw)
         #self.setTextInteractionFlags(Qt.TextEditorInteraction)
@@ -606,10 +581,10 @@ class AppGram(Gram):
         self.code = code
         
     def __reduce__(self):
-        #self.pickleDict['code'] = self.code
-        self.pickleDict['pos'] = self.pos()
-        self.pickleDict['active'] = self.active
-        return self.__class__,(self.label.toPlainText(),self.code,),self.pickleDict    
+        pickleDict={}
+        pickleDict['pos'] = self.pos()
+        pickleDict['active'] = self.active
+        return self.__class__,(self.label.toPlainText(),self.code,),pickleDict    
     def __setstate__(self,state):
         self.setPos(state.pop('pos',QPoint(0,0)) )
         self.active = state.pop('active',True)
@@ -636,7 +611,7 @@ class mydg(QDialog,Ui_Dialog):
     def __init__(self,*args, **kw):
         super().__init__(*args,**kw)
         self.setupUi(self)
-        self.syn = SynModel( self.plainTextEdit.document() )
+        #self.syn = SynModel( self.plainTextEdit.document() )
     
     #def mouseDoubleClickEvent(self,event):
         #rt = super().mouseDoubleClickEvent(event)
@@ -649,8 +624,9 @@ if __name__ == '__main__':
     
     mainwin.setCentralWidget(win)
     mainwin.show()
+    win.setupMainwin(mainwin)
 
-    
+
     act1 = QAction('line',mainwin)
     act_txt = QAction('说明文字',mainwin)
     act_rect = QAction('框',mainwin)
@@ -668,12 +644,12 @@ if __name__ == '__main__':
     act1.triggered.connect(win.set_line)
     act_txt.triggered.connect(win.insert_text)
     act_rect.triggered.connect(win.set_rect)
-    act_save.triggered.connect(win.save)
+    act_save.triggered.connect(win.new_save)
     act_save_as.triggered.connect(win.save_as)
     act_parser.triggered.connect(win.parser)
     act_update_cst.triggered.connect(win.update_cst)
     act_add_cst.triggered.connect(win.add_cst)
-    act_load.triggered.connect(win.load)
+    act_load.triggered.connect(win.new_load)
     act_to_app.triggered.connect(win.to_app)
     
     tb=QToolBar()

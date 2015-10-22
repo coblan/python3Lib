@@ -353,8 +353,8 @@ class Line(QGraphicsLineItem,IPickle):
         self.setPos(state.pop('pos',QPoint(0,0)) )
         self.__dict__.update(state)    
 
-from heQt.graphicsView_p.items import AwareItem,ControlRect
-class Gram(AwareItem,IPickle):
+from heQt.graphicsView_p.items import Controlable,ControlRect
+class Gram(Controlable,IPickle):
     
     def __init__(self,*args,**kw):
         super().__init__(*args,**kw)

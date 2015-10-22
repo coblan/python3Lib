@@ -1,6 +1,4 @@
-from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
+from heQt.qteven import *
 from heStruct.pyeven import *
     
 
@@ -9,7 +7,7 @@ class ControlRect(QGraphicsItem):
     控制方框。
     """
     def __init__(self, item ,parentItem=None):
-        super().__init__(parentItem)
+        s(ControlRect, parentItem)
         self.controllerRadius = 6
         self.margin = self.controllerRadius
         #self.item = item
@@ -36,11 +34,7 @@ class ControlRect(QGraphicsItem):
         if p and hasattr(p,'setSize'):
             p.setSize(qrect)
                 
-    def boundingRect(self):
-        #if self._oldrect:
-            #return self._oldrect
-        #else:
-            
+    def boundingRect(self):   
         rect = self.rect.adjusted(-self.margin,-self.margin,self.margin,self.margin)
         return rect
     
@@ -66,8 +60,8 @@ class ControlRect(QGraphicsItem):
             return super().mouseMoveEvent(event)
         elif self.lastPos !=None:
             rect = self.rect
-            if self.scene().awarePoint != None:
-                p = self.mapFromScene(self.scene().awarePoint)
+            if self.scene().awarePoint() != None:
+                p = self.mapFromScene(self.scene().awarePoint())
             else:
                 p = event.pos()
             dx ,dy =p.x()-self.lastPos.x() , p.y()-self.lastPos.y() 
@@ -160,45 +154,10 @@ class ControlRect(QGraphicsItem):
         else:
             view.setCursor(Qt.SizeAllCursor)
 
-#class Line(QGraphicsItem):
-    
-    #def __init__(self, p1, p2, parent=None):
-        #super().__init__(parent)
-        #self.p1 = p1
-        #self.p2 = p2
-        
-    #def boundingRect(self):
-        #x = [self.p1.x(), self.p2.x()]
-        #y = [self.p1.y(), self.p2.y()]
-        #minx=min(x)
-        #maxx = max(x)
-        #miny = min(y)
-        #maxy = max(y)
-        #rect = QRectF(QPointF(minx,miny),QPointF(maxx,maxy) )
-        ##if self.isSelected():
-            ##rect = rect.adjusted(-self.radius,-self.radius,self.radius,self.radius)
-        ##if self._oldrect:
-            ##rect = self._oldrect.united(rect) 
-        #return rect        
-    
-    #def paint(self, painter, option, widget=None):
-        #painter.drawLine(self.p1,self.p2)
-    
-    #def MSFreeMove(self, pos, view):
-        #self.parentItem().MSFreeMove(pos,view)
-    
-    #def shape(self):
-        #path = QPainterPath()
-        #path.moveTo(self.p1)
-        #path.lineTo(self.p2)
-        #stroker = QPainterPathStroker()
-        #stroker.setWidth(5)
-        #path = stroker.createStroke(path)
-        #return path
 
 class LineStrip(QGraphicsItem):
-    def __init__(self, points, parent=None):
-        super().__init__(parent)
+    def __init__(self, points=None, parent=None):
+        s(LineStrip, parent)
         self.crt_point = None
         self.radius = 6
         self.grabRadius = 10
@@ -207,26 +166,21 @@ class LineStrip(QGraphicsItem):
             #i.setPos(p)
         self.points = points
         
-        self.msPoint = None
+        #self.msPoint = None
         self.awarePoint = None
         self.setFlag(QGraphicsItem.ItemIsSelectable)
         self.setFlag(QGraphicsItem.ItemIsMovable)
         self.setAcceptHoverEvents(True)
+        
         self.act1 = QAction('插入点', None)
         self.act2 = QAction('删除当前点', None)
         self.act1.triggered.connect(self.on_insert_act)
         self.act2.triggered.connect(self.on_rm_act)
         
-    #def awarePoints(self):
-        #return self.points
-    
-    #def awareLine(self):
-        #return []
-    
-    #def points(self):
-        #return self.points_
-        #return [i.pos() for i in self.pointItems()]
-    
+    def setPoints(self,points):
+        self.points = points
+        self.update()
+        
     def pointItems(self):
         out = []
         for i in self.childItems():
@@ -235,6 +189,7 @@ class LineStrip(QGraphicsItem):
         return out
     
     def aware(self, b, scnPos):
+        'return awarePoint : Scene Pos'
         if not b:
             self.prepareGeometryChange()
             self.awarePoint = None
@@ -244,27 +199,8 @@ class LineStrip(QGraphicsItem):
                 if (p-i).manhattanLength() < 6:
                     self.prepareGeometryChange()
                     self.awarePoint = i
-                    self.scene().awarePoint = self.mapToScene(i)
-                    return
-    #@staticmethod
-    #def install(view):
-        #view.mapfunc['create_linestrip'] ={
-            #'mouseMoveEvent':LineStrip.viewMsMove,
-            #'mousePressEvent':LineStrip.viewMsPress,
-            #'mouseReleaseEvent':LineStrip.viewMsRelease,
-            #'proxyplug1':LineStrip._completLine,
-            #'actions':LineStrip.viewActions
-        #}     
-        
-        #view.lastpoint = None
-        #view.tmppoints = []
-        #view.tmplines = []
-        #view.registFreeMSmoveAware(LineStrip)
-        
-
+                    return self.mapToScene(i)
     
-
-             
     def paint(self, painter, option, widget=None):
         if len(self.points )>=2:
             start = None
@@ -306,28 +242,17 @@ class LineStrip(QGraphicsItem):
     def hoverLeaveEvent(self,event):
         view = event.widget()
         view.setCursor(Qt.ArrowCursor)
-        #if self.awarePoint != None:
-            #self.prepareGeometryChange()
-            #self.awarePoint = None
-        
+    
     def hoverMoveEvent(self,event):
         pos = event.pos()
         view = event.widget()
-        
         for p in self.points:
             distans = p - pos
             if distans.manhattanLength()< self.grabRadius:
                 view.setCursor(Qt.PointingHandCursor)
-                self.prepareGeometryChange()
-                self.awarePoint = p
-                self.scene().awarePoint = self.mapToScene(p)
-                return
-        #if self.scene().state == 'normal':
+                return 
         view.setCursor(Qt.SizeAllCursor)
             
-        if self.awarePoint !=None:
-            self.prepareGeometryChange()
-            self.awarePoint = None
         
     def mousePressEvent(self,event):
         self.lastpos = event.pos()
@@ -335,9 +260,9 @@ class LineStrip(QGraphicsItem):
             distans = p - event.pos()
             if distans.manhattanLength()< self.grabRadius :
                 self.crt_point = p
-                self.setSelected(True)
+                #self.setSelected(True)
                 break  
-        return super().mousePressEvent(event)
+        return s(LineStrip,event)
     
     def mouseMoveEvent(self,event):
         if self.crt_point is not None and self.lastpos is not None:
@@ -348,12 +273,12 @@ class LineStrip(QGraphicsItem):
             p.setY(p.y()+ dp.y())
             self.lastpos = event.pos()
         else:
-            return super().mouseMoveEvent(event)
+            return s(LineStrip, event)
         
     def mouseReleaseEvent(self,event):
-        if self.scene().awarePoint != None and self.crt_point !=None:
+        if self.scene().awarePoint() != None and self.crt_point !=None:
             self.prepareGeometryChange()
-            p = self.mapFromScene(self.scene().awarePoint)
+            p = self.mapFromScene(self.scene().awarePoint())
             self.crt_point.setX(p.x())     
             self.crt_point.setY(p.y())  
         self.crt_point = None
@@ -370,19 +295,13 @@ class LineStrip(QGraphicsItem):
         stroker = QPainterPathStroker()
         stroker.setWidth(6)
         path = stroker.createStroke(path)
-        
         return path
 
     def itemChange(self,change,value):
         if change == QGraphicsItem.ItemSelectedChange:
             self.prepareGeometryChange()
-            #for i in self.pointItems():
-                ##i.setAware(value)
-                #i.setSelected(value)
-            #if not value:
-                #self.scene().update(self.mapToScene(self.boundingRect()).boundingRect() )
-                
-        return super().itemChange(change,value)
+
+        return s(LineStrip, change,value)
     
     def insertPoint(self, pos):
         'pos: self的坐标系'
@@ -433,27 +352,42 @@ class LineStrip(QGraphicsItem):
             self.update()
     
     def __reduce__(self):
-        self.pickleDict={}
-        self.pickleDict['pos'] = self.pos()
-        self.constructArgs = (self.points,)
-        return self.__class__,self.constructArgs,self.pickleDict  
+        pickleDict={}
+        pos = self.pos()
+        points =[(i.x(),i.y()) for i in self.points]
+        
+        pickleDict['pos'] = (pos.x(),pos.y())
+        pickleDict['points'] = points
+        return self.__class__,(),pickleDict  
     
     def __setstate__(self,state):
-        self.setPos(state.pop('pos',QPoint(0,0)) )
+        pos = state.pop('pos',(0,0) )
+        self.setPos( *pos )
+        points = state.pop('points')
+        p=[]
+        for x, y in points:
+            p.append( QPointF(x,y))
+        self.setPoints(p)
         self.__dict__.update(state)  
 
 
 class LineDrawer(QObject):
-    def __init__(self, manager):
+    def __init__(self,scene, aware=None):
         s(LineDrawer)
-        self.manager = manager
+        self.scene = scene
+        self.aware = aware
         self.lastpoint = None
         self.lastLine = None
         self.tmplines = []
         
+        self.createAct = QAction('画线',self)
         self.compAct = QAction('完成', self)
-        self.compAct.triggered.connect(self.on_completLine)
+        self.createAct.triggered.connect(self.createLine)
+        self.compAct.triggered.connect(self.finish)
    
+    def setAware(self,aware):
+        self.aware = aware
+       
     def mouseMoveEvent(self, event):
         if self.lastpoint !=None and self.lastline !=None:
             point =  event.scenePos()
@@ -462,14 +396,21 @@ class LineDrawer(QObject):
     
     def mouseReleaseEvent(self,  event):
         return False
-
+    
+    def createLine(self):
+        self.scene.drawer = self
+        
     def actions(self):
-        return [self.compAct,]
+        # 有lastpoint表明是绘制状态，没有表示不是绘制状态。
+        if self.lastpoint:
+            return [self.compAct,]
+        else:
+            return [self.createAct,]
 
     def mousePressEvent(self, event):
-        scene = self.manager.scene
-        if scene.awarePoint != None:
-            p = scene.awarePoint
+        #scene = self.manager.scene
+        if self.aware.awarePoint() != None:
+            p = self.aware.awarePoint()
         else:
             p =  event.scenePos() 
         if self.lastpoint == None:
@@ -483,36 +424,31 @@ class LineDrawer(QObject):
             #view.lastline = QGraphicsLineItem(view.lastpoint.x(), view.lastpoint.y(), p.x(), p.y())
         self.tmppoints.append(p) 
         self.lastpoint = p
-        scene.addItem(self.lastline)
+        self.scene.addItem(self.lastline)
         self.tmplines.append(self.lastline)
         #return func(view,event)
         return True
         
-    def on_completLine(self, func):
-        scene = self.manager.scene
+    def finish(self):
+        #scene = self.manager.scene
         del self.tmppoints[-1]
         strip = LineStrip(self.tmppoints)
-        scene.addItem(strip)
+        self.scene.addItem(strip)
         self.tmppoints = []
         self.lastpoint = None
-        self.drawer = None
+        #self.drawer = None
         for line in self.tmplines:
-            scene.removeItem(line)
+            self.scene.removeItem(line)
         self.tmplines = []
-        self.manager.drawer = None
+        self.scene.drawer = None
         
 
-class AwareItem(QGraphicsItem):
+class Controlable:
     """能够自动添加控制杆
     子类只需要重写setSize"""
     
-    #@staticmethod
-    #def install(view): 
-        #pass
-        #view.registFreeMSmoveAware(ControlRect)    
-        
     def __init__(self,*args,**kw):
-        super().__init__(*args,**kw)
+        s(Controlable, *args,**kw)
         self.controller = None
         self.setFlag(QGraphicsItem.ItemIsSelectable)
         self.setFlag(QGraphicsItem.ItemIsMovable)
@@ -526,23 +462,21 @@ class AwareItem(QGraphicsItem):
                 self.scene().removeItem(self.controller)
                 self.controller = None
                 
-        return s(AwareItem, change, value)
+        return s(Controlable, change, value)
     
     def setSize(self,qrect):
         print('需要重写AwareItem.setSize')   
 
 
-class TryItem(QGraphicsRectItem,AwareItem):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-  
+class TryItem(Controlable, QGraphicsRectItem):
+ 
     def setSize(self,qrect):
         if qrect:
             self.setRect(qrect)
 
     def mouseDoubleClickEvent(self,event):
         print('双击了我')
-        return super().mouseDoubleClickEvent(event)
+        return s(TryItem,event)
     
 
 class PointItem(QGraphicsItem):
