@@ -4,6 +4,7 @@ from heQt.scintilla_p.bridge import Bridge
 from heQt.scintilla_p import const
 from heStruct.pyeven import *
 from heQt.scintilla_p.lineManager import LineManager
+from heQt.scintilla_p.autocompleter import *
 from ctypes import Structure, c_int
 from heQt.scintilla_p.cusLexer import CusLexer
 
@@ -318,7 +319,11 @@ class Scintilla(Bridge):
         self.setBackColor(33, QColor('#E6E6E6'))
         
         from heQt.scintilla_p.exraHight import DbFind
-        self.setExtraHight(DbFind(self))      
+        self.setExtraHight(DbFind(self)) 
+        
+        auto =Autocompleter(self)
+        auto.setup001('dogbit')
+        self.setAutoCompleter(auto)
         
         
 def QcolorToRGB(color):

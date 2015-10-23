@@ -55,8 +55,8 @@ class Lexer(CusLexer):
         self.editor.setFormatList(out, [self.colors['comment']]) 
         
         
-class AutoComp(Autocompleter):
-    pass
+#class AutoComp(Autocompleter):
+    #pass
 
     
             
